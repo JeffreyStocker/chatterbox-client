@@ -11,7 +11,7 @@ $(document).ready(function () {
   
   
   $('.button').on('click', function () {
-    console.log ('ME!');
+    // console.log ('ME!');
   });
   
   
@@ -20,7 +20,7 @@ $(document).ready(function () {
 });
 
 var app = {
-  server: 'http://parse.sfm6.hackreactor.com/'
+  server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages'
 };
 
 app.init = function () {
@@ -52,26 +52,55 @@ app.makeMessage = function () {
 };
 
 app.send = function (value) {
+  // var testMessage = {. /// this works!!
+  //   username: 'bob RULES',
+  //   text: 'bob is lost',
+  //   roomname: 'IN SPACE'
+  // };
+  
   $.ajax({
     type: 'POST',
-    url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
+    url: app.server,
     data: value, 
-    success: function () {
-      console.log ('POST has run successfully');
-    }
+    success: function (data) {
+      console.log ('POST: ', data);
+    },
+    error: function (data) {
+      console.log ('POST ERROR: ', data);
+    } 
   });
   
+};
+
+
+
+app.fetch = function () {
+  $.ajax({
+    // url: 'http://parse.sfm6.hackreactor.com/',
+    url: app.server,
+    type: 'GET',
+    success: function(data) {
+      console.log('POST: ', data);
+      app.parseMessages(data);
+    },
+    error: function (data) {
+      console.log ('POST ERROR: ', data);
+    } 
+  });
 };
 
 app.fetch = function () {
   $.ajax({
     // url: 'http://parse.sfm6.hackreactor.com/',
-    url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
+    url: app.server,
     type: 'GET',
     success: function(data) {
-      // console.log(JSON.stringify(data))n;
+      console.log('POST: ', data);
       app.parseMessages(data);
-    }
+    },
+    error: function (data) {
+      console.log ('POST ERROR: ', data);
+    } 
   });
 };
 
@@ -106,6 +135,7 @@ app.renderMessage = function (message) {
   // output.innerhtml = message.text;
   $('#chats').prepend(chatMessage);
 };
+
 
 app.renderRoom = function (room) {
   var output = $('<span></span>');
