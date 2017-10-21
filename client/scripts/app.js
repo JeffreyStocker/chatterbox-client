@@ -5,8 +5,8 @@ $(document).ready(function () {
   app.init();
   
   $('#postMessage').on('click', function () {
-    console.log ('i run');
-    // app.send(app.makeMessage());
+    // console.log ('i run');
+    app.send(app.makeMessage());
   });
   
   
