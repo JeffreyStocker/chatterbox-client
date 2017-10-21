@@ -14,13 +14,36 @@ $(document).ready(function () {
     // console.log ('ME!');
   });
   
+  // $('.username').on('click', function () {
+  //   console.log ('click')
+  //   app.clearMessages();
+  //   app.usernames.forEach ((user) =>{
+  //     app.renderMessage(message);
+  //   });
+  // });
   
-  $('username').innerhtml = '';
+  $('#get').on('click', function () {
+    app.clearMessages();
+    
+    app.fetch();
+  });
+  // $('username').innerhtml = '';
 
 });
 
 var app = {
-  server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages'
+  server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
+  currentUser: '',
+  usernames: new Set(), 
+  roomnames: new Set(),
+  rawData: undefined, 
+  friends: new Set(),
+  testMessage: { /// this works!!
+    username: 'bob RULES',
+    text: 'bob is lost',
+    roomname: 'IN SPACE'
+  },
+  
 };
 
 app.init = function () {
@@ -29,6 +52,35 @@ app.init = function () {
   app.getUserName();
 };
 
+
+////////////////////////
+/// Helper functions
+/////////////////////// 
+
+app.clearWebPage = function () {
+  app.clearMessages();
+  app.clearRoomSelect();
+}
+
+app.cycleThroughMessages = function (data, callback) {
+  //to be writting helper function that loops through each 
+  //object in the data then calls the callback on it
+};
+
+app.test = function () {
+  // app.send()
+  document.write('%24');
+};
+
+
+app.sortMessages = function (rawData) {
+  _.each(rawData.results, (message) => {
+    app.usernames.add (message.username || 'anonymous');
+    app.roomnames.add (message.roomname || '');
+  });
+};
+
+
 app.getUserName = function () {
   var userName = window.location.search.split('=');
   userName = userName.pop();
@@ -36,77 +88,120 @@ app.getUserName = function () {
   return userName;
 };
 
-// app.test = function () {
-//   // app.send()
-//   document.write('%24');
-// };
 
 app.makeMessage = function () {
+  console.log($('#userMessage'));
   var message = {
     username: this.getUserName(),
-    text: $('#userMessage').value,
+    text: $('#userMessage').val(),
+    // text: $('#userMessage').value,
     roomname: $('roomSelect').value
   };
   console.log(message);
   return message;
 };
 
-app.send = function (value) {
-  // var testMessage = {. /// this works!!
-  //   username: 'bob RULES',
-  //   text: 'bob is lost',
-  //   roomname: 'IN SPACE'
-  // };
+app.clickOnUserNameAndOnlyShowMessagesFromThatUser = function () {
+  $('.username').on('click', function () {
+    app.clearMessages();
+    console.log ($(this).text());
+    var userWanted = $(this).text();
+    ////// below WIP
+    data.results.forEach ((message) =>{
+      // console.log (`${storedThis} ||| ${user}`)
+      var user = message.username;
+      if (userWanted === user) {
+        console.log ('i');
+        app.renderMessage(message);
+      }
+    });
+  });
+};
+
+app.clickOnUserNameAddFriends = function () {
+  $('.username').on('click', function () {
+    app.clearMessages();
+    var user = $(this).text();
+    app.friends.add(user);
+  });
+};
+
+app.boldFriends = function () {
   
+};
+  
+app.updateRoomNames = function () {
+  //app.roomnames;
+  //still want to sort the list of rooms
+  // console.log(app.roomnames);
+  app.roomnames.forEach ((room) => {
+    if (room === '') { 
+      return;
+    }
+    // console.log(room);
+    var selectNode = $(`<option value = "${room}"> ${room} </option>`);
+    // console.log(selectNode);
+    $('#roomSelect').append(selectNode);
+  });
+  
+};
+
+////////////////////////
+/// IO from Server
+/////////////////////// 
+
+app.send = function (value) {
   $.ajax({
     type: 'POST',
     url: app.server,
-    data: value, 
-    success: function (data) {
-      console.log ('POST: ', data);
+    dataType: 'json',
+    contentType: 'application/json',
+    data: JSON.stringify(value), 
+    
+    success: function (response) {
+      console.log ('POST: ', response);
     },
-    error: function (data) {
-      console.log ('POST ERROR: ', data);
+    error: function (response) {
+      console.log ('POST ERROR: ', response);
     } 
   });
-  
 };
 
 
 
 app.fetch = function () {
   $.ajax({
-    // url: 'http://parse.sfm6.hackreactor.com/',
     url: app.server,
     type: 'GET',
+    data: 'order=-createdAt',
     success: function(data) {
       console.log('POST: ', data);
+      app.rawData = data;
       app.parseMessages(data);
+      app.sortMessages(data);
+      app.updateRoomNames();
+      // app.clickOnUserNameAddFriends();
     },
     error: function (data) {
       console.log ('POST ERROR: ', data);
     } 
-  });
+  });    
 };
 
-app.fetch = function () {
-  $.ajax({
-    // url: 'http://parse.sfm6.hackreactor.com/',
-    url: app.server,
-    type: 'GET',
-    success: function(data) {
-      console.log('POST: ', data);
-      app.parseMessages(data);
-    },
-    error: function (data) {
-      console.log ('POST ERROR: ', data);
-    } 
-  });
-};
+////////////////////////
+/// HTML Functions
+/////////////////////// 
 
 app.clearMessages = function () {
   $('#chats').html('');
 };
+
+app.clearRoomSelect = function () {
+  
+  $('#roomSelect').html('');
+  
+};
+
 
 app.parseMessages = function (data) {
   data.results.forEach ((message) => {
@@ -114,31 +209,49 @@ app.parseMessages = function (data) {
   });
 };
 
-app.renderMessage = function (message) {
-  
-  
-  // var user = escape(message.username || 'anonymous');
-  // var text = encodeURIComponent(message.text || ''); 
-  // var roomname = encodeURIComponent(message.roomname || 'default');
-  
-  
-  var user = message.username || 'anonymous';
-  var text = message.text || ''; 
-  var roomname = message.roomname || 'default';
-  
+
+app.renderMessage = function (message) {  
+  var user = escape(message.username || 'anonymous');
+  var text = encodeURIComponent(message.text || ''); 
+  var roomname = encodeURIComponent(message.roomname || 'default');
+  // var user = message.username || 'anonymous';
+  // var text = message.text || ''; 
+  // var roomname = message.roomname || 'default';
   
   var chatMessage = $(`<div class = "chat">
     <div class = "username"> ${user} </div>
     <div class = "message" > ${text} </div>
     <div>`);
-  
   // output.innerhtml = message.text;
-  $('#chats').prepend(chatMessage);
+  $('#chats').append(chatMessage);
+};
+
+
+app.renderMessage = function (message) {  
+  var chatNode = $('<div class = "chat"><div>');
+
+  var textNode = $('<div class = "message"></div>');
+  textNode.append(document.createTextNode(message.text || ''));
+  
+  var usernameNode = $('<div class = "username"></div>');
+  usernameNode.append(document.createTextNode(message.username || 'anonymous'));
+  
+  // var roomnameNode = $('<div class = "roomname" ></div>');
+  // roomnameNode.append(document.createTextNode(message.roomname || 'default'));
+  
+  chatNode.append(usernameNode);
+  chatNode.append(textNode);
+  // chatNode.append(username);
+
+  $('#chats').append(chatNode);
 };
 
 
 app.renderRoom = function (room) {
+  //depreciated
   var output = $('<span></span>');
   output.innerhtml = room;
   $('#roomSelect').prepend(output);
 };
+
+

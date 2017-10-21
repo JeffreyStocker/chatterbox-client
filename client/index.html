@@ -26,7 +26,7 @@
   <body>
   <div id = 'controls' >
     <button id = 'send' class = 'button' onClick = "app.send()"> Send </button>
-    <button id = 'get' class = 'button' onClick = "app.fetch()"> get </button>
+    <button id = 'get' class = 'button' > get </button>
     <button id = 'test' class = 'button' onClick = "app.test()"> test </button>
   </div>
   
@@ -37,8 +37,10 @@
 
     <span> Room: 
     <select id="roomSelect"> 
-      <option value='test'>test</option>
+      <option value=''></option>
     </select>
+    
+    
     </span>
     <div>Message to Tweet <br><input id = "userMessage" type='text'></div>
     <b id = "username"></b>
@@ -48,10 +50,7 @@
     
     
     <div id="chats">
-      <div class="chat">
-        <div class="username">username</div>
-        <div class = "message" > Message</div>
-      </div>
+      
     </div>
   </body>
 </html>
