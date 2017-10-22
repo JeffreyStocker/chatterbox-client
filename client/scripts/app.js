@@ -16,10 +16,13 @@ $(document).ready(function () {
   
   // $('.username').on('click', function () {
   //   console.log ('click')
-  //   app.clearMessages();
-  //   app.usernames.forEach ((user) =>{
-  //     app.renderMessage(message);
-  //   });
+  //   // app.clearMessages();
+  //   // app.usernames.forEach ((user) =>{
+  //   //   app.renderMessage(message);
+  //   // });
+  //   var data = this.data('userName')
+  //   console.log (data)
+  //   // $('.username').find('[data-userName="' + )
   // });
   
   $('#get').on('click', function () {
@@ -152,11 +155,21 @@ app.clickOnUserNameAndOnlyShowMessagesFromThatUser = function () {
   });
 };
 
+
 app.clickOnUserNameAddFriends = function () {
   $('.username').on('click', function () {
-    app.clearMessages();
+    // app.clearMessages();
     var user = $(this).text();
     app.friends.add(user);
+    
+    $node = $(this);
+    nodeDataTag = $node.attr('data-username');
+    $('div[data-username = ' + nodeDataTag + ']').toggleClass('friend');
+    // $('.username').attr(nodeDataTag).toggleClass('friend');
+    // $('.username').data(nodeDataTag).toggleClass('friend');
+    // $()
+    console.log (nodeDataTag);
+    // console.log (data);
   });
 };
 
@@ -215,7 +228,7 @@ app.fetch = function () {
       app.parseMessages(data);
       app.sortMessages(data);
       app.updateRoomNames();
-      // app.clickOnUserNameAddFriends();
+      app.clickOnUserNameAddFriends();
     },
     error: function (data) {
       console.log ('POST ERROR: ', data);
@@ -264,11 +277,13 @@ app.parseMessages = function (data) {
 
 app.renderMessage = function (message) {  
   var chatNode = $('<div class = "chat"><div>');
+  var data = encodeURIComponent(message.username || 'anonymous');
 
   var textNode = $('<div class = "message"></div>');
   textNode.append(document.createTextNode(message.text || ''));
   
-  var usernameNode = $('<div class = "username"></div>');
+  var usernameNode = $(`<div data-userName = ${data} class = "username"></div>`);
+  // var usernameNode = $('<div class = "username"></div>');
   usernameNode.append(document.createTextNode(message.username || 'anonymous'));
   
   // var roomnameNode = $('<div class = "roomname" ></div>');
