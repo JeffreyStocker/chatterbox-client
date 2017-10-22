@@ -27,9 +27,24 @@ $(document).ready(function () {
     
     app.fetch();
   });
+  
+  $('#roomSelect').change(function () {
+    app.clearMessages();
+    var selectedRoom = $( '#roomSelect option:selected' ).val();
+    var roomData = app.messages.roomname[selectedRoom] || [];
+    console.log (roomData);
+    for (var i = 0; i < roomData.length; i++) {
+      app.renderMessage(roomData[i]);
+    }
+
+  });
+  
+  // WIP put current user next to 'post message'
   // $('username').innerhtml = '';
 
 });
+
+
 
 var app = {
   server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
@@ -37,12 +52,16 @@ var app = {
   usernames: new Set(), 
   roomnames: new Set(),
   rawData: undefined, 
+  messages: {
+    username: {'bob': []},
+    roomname: {testing: [] }
+  }, 
   friends: new Set(),
-  testMessage: { /// this works!!
-    username: 'bob RULES',
-    text: 'bob is lost',
-    roomname: 'IN SPACE'
-  },
+  // testMessage: { /// this works!!
+  //   username: 'bob RULES',
+  //   text: 'bob is lost',
+  //   roomname: 'IN SPACE'
+  // },
   
 };
 
@@ -52,6 +71,13 @@ app.init = function () {
   app.getUserName();
 };
 
+// app.cycleThroughMessages = function (data, callback) {
+//   //to be writting helper function that loops through each 
+//   //object in the data then calls the callback on it
+//   // data.results.forEach ()
+//   callback (username, roomname, messageNode);
+// };
+
 
 ////////////////////////
 /// Helper functions
@@ -60,12 +86,9 @@ app.init = function () {
 app.clearWebPage = function () {
   app.clearMessages();
   app.clearRoomSelect();
-}
-
-app.cycleThroughMessages = function (data, callback) {
-  //to be writting helper function that loops through each 
-  //object in the data then calls the callback on it
 };
+
+
 
 app.test = function () {
   // app.send()
@@ -75,8 +98,19 @@ app.test = function () {
 
 app.sortMessages = function (rawData) {
   _.each(rawData.results, (message) => {
-    app.usernames.add (message.username || 'anonymous');
-    app.roomnames.add (message.roomname || '');
+    var user = message.username || 'anonymous';
+    var room = message.roomname || '';
+    app.usernames.add (user);
+    app.roomnames.add (room);
+    if (!app.messages.username[user]) {
+      app.messages.username[user] = [];
+    }
+    if (!app.messages.roomname[room]) {
+      app.messages.roomname[room] = [];
+    }
+    app.messages.username[user].push (message);
+    app.messages.roomname[room].push (message);
+    
   });
 };
 
@@ -95,7 +129,7 @@ app.makeMessage = function () {
     username: this.getUserName(),
     text: $('#userMessage').val(),
     // text: $('#userMessage').value,
-    roomname: $('roomSelect').value
+    roomname: $('roomSelect option:selected').val()
   };
   console.log(message);
   return message;
@@ -135,12 +169,13 @@ app.updateRoomNames = function () {
   //still want to sort the list of rooms
   // console.log(app.roomnames);
   app.roomnames.forEach ((room) => {
-    if (room === '') { 
-      return;
-    }
+    // if (room === '') { 
+    //   return;
+    // }
     // console.log(room);
+    room = escape(room);
     var selectNode = $(`<option value = "${room}"> ${room} </option>`);
-    // console.log(selectNode);
+  //   // console.log(selectNode);
     $('#roomSelect').append(selectNode);
   });
   
@@ -210,21 +245,21 @@ app.parseMessages = function (data) {
 };
 
 
-app.renderMessage = function (message) {  
-  var user = escape(message.username || 'anonymous');
-  var text = encodeURIComponent(message.text || ''); 
-  var roomname = encodeURIComponent(message.roomname || 'default');
-  // var user = message.username || 'anonymous';
-  // var text = message.text || ''; 
-  // var roomname = message.roomname || 'default';
+// app.renderMessage = function (message) {  
+//   var user = escape(message.username || 'anonymous');
+//   var text = encodeURIComponent(message.text || ''); 
+//   var roomname = encodeURIComponent(message.roomname || 'default');
+//   // var user = message.username || 'anonymous';
+//   // var text = message.text || ''; 
+//   // var roomname = message.roomname || 'default';
   
-  var chatMessage = $(`<div class = "chat">
-    <div class = "username"> ${user} </div>
-    <div class = "message" > ${text} </div>
-    <div>`);
-  // output.innerhtml = message.text;
-  $('#chats').append(chatMessage);
-};
+//   var chatMessage = $(`<div class = "chat">
+//     <div class = "username"> ${user} </div>
+//     <div class = "message" > ${text} </div>
+//     <div>`);
+//   // output.innerhtml = message.text;
+//   $('#chats').append(chatMessage);
+// };
 
 
 app.renderMessage = function (message) {  
